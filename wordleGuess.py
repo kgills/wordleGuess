@@ -1,5 +1,4 @@
 import wordList
-import sys
 from operator import itemgetter
 
 # Create a list to store the frequency of the letters
@@ -16,13 +15,12 @@ for word in wordList.words:
 i = 0
 letterList = []
 for letter in letterFreq:
-	# print(chr(i+97)+": "+str(letter))
 	letterTemp=[chr(i+97),letter]
 	letterList.append(letterTemp)
 	i = i+1
 
 # Stort the list by frequency
-letterList = sorted(letterList, key=itemgetter(1), reverse=False)
+letterList = sorted(letterList, key=itemgetter(1), reverse=True)
 print("Letter Frequency: ")
 print(*letterList, sep="\n")
 print()
@@ -30,47 +28,37 @@ print()
 # Remove the frequency
 letterList = [row[0] for row in letterList]
 
-# Create list of words and their score
-wordScore = [0] * len(wordList.words)
-wordScoreList = []
+# Select only the first 15 letters
+letterList = letterList[:15]
 
-# Calculate the word score
-i = 0
+# Create list of words with the top letters
+topWordList = []
 for word in wordList.words:
-
-	# Filter letters with duplicates
-	duplicateLetter=False
+	filterWord=False
 	for letter in word:
+		# Filter words with duplicates
 		if(word.count(letter) > 1):
-			duplicateLetter=True
+			filterWord=True
 
-	# Calculate the score
-	if(not duplicateLetter):
-		for letter in word:
-			wordScore[i] = wordScore[i] + letterList.index(letter)
+		# Filter words with letters not in the most frequent
+		if(not letter in letterList):
+			filterWord=True
 
-		# Add list of words and score
-		wordScoreList.append([word,wordScore[i]])
+	# Add the word to the list
+	if(not filterWord):
+		topWordList.append(word)
 
-	i = i + 1
+# Figure out the best first 3 guesses
+found = False
+combinedWord = ""
+for word0 in topWordList:
+	if found:
+		break
+	for word1 in topWordList:
+		if found:
+			break
 
-# Sort the list of scores
-wordScoreList = sorted(wordScoreList, key=itemgetter(1), reverse=True)
-
-wordScoreList = wordScoreList[:1500]
-
-print("Best guesses: ")
-print(*wordScoreList[:10], sep="\n")
-print()
-
-wordScoreList = [row[0] for row in wordScoreList]
-
-# Figure out the best first 2 guesses
-bestGuesses = ""
-lowestScore = 2*len(wordScoreList)
-for word0 in wordScoreList:
-	for word1 in wordScoreList:
-
+		# Filter if the words have common letters
 		duplicate = False
 		combinedWord = word0 + word1
 		for letter in combinedWord:
@@ -80,11 +68,20 @@ for word0 in wordScoreList:
 		if(duplicate):
 			continue
 
-		score = wordScoreList.index(word0) + wordScoreList.index(word1)
+		for word2 in topWordList:
+			if found:
+				break
 
-		if(score < lowestScore):
-			lowestScore = score
-			bestGuesses = word0+ " " + word1
+			# Filter if the words have common letters
+			duplicate = False
+			combinedWord = word0 + word1 + word2
+			for letter in combinedWord:
+				if(combinedWord.count(letter) > 1):
+					duplicate = True
 
-print("Best first 2 guesses: ")
-print(bestGuesses)
+			if(not duplicate):
+				combinedWord = word0+" "+word1+" "+word2
+				found = True
+
+print("Best first 3 guesses: ")
+print(combinedWord)
